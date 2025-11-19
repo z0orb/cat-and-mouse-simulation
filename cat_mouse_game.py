@@ -41,14 +41,20 @@ class TextureManager:
             'cat': 'cat.jpg',
             'mouse1': 'mouse1.jpg',
             'mouse2': 'mouse2.jpg',
-            'cheese': 'cheese.jpg'
+            'cheese': 'cheese.png',
+            'menu_bg': 'menu_bg.jpg'   
         }
         
         for key, filename in texture_files.items():
             try:
                 if os.path.exists(filename):
                     image = pygame.image.load(filename)
-                    image = pygame.transform.scale(image, (CELL_SIZE, CELL_SIZE))
+
+                    if key == 'menu_bg':
+                        image = pygame.transform.scale(image, (WINDOW_WIDTH, WINDOW_HEIGHT))
+                    else:
+                        image = pygame.transform.scale(image, (CELL_SIZE, CELL_SIZE))
+
                     self.textures[key] = image
                     print(f"✓ Loaded texture: {filename}")
                 else:
@@ -60,6 +66,7 @@ class TextureManager:
     def get_texture(self, texture_name):
         """Get texture if available, returns None for fallback to solid color"""
         return self.textures.get(texture_name)
+
 
 class GridType(Enum):
     PATH = 0
@@ -560,32 +567,41 @@ class Game:
                 pygame.draw.line(self.screen, mouse.color, mouse_center, cheese_center, 2)
     
     def draw_menu(self):
-        self.screen.fill(WHITE)
-        
+
+        bg = self.texture_manager.get_texture("menu_bg")
+        if bg:
+            self.screen.blit(bg, (0, 0))
+        else:
+            self.screen.fill(WHITE)  
+
+
         font_large = pygame.font.Font(None, 64)
+
         title = font_large.render("Cat and Mouse", True, BLACK)
         title_rect = title.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 3))
         self.screen.blit(title, title_rect)
-        
+            
         subtitle = font_large.render("Simulation", True, BLACK)
         subtitle_rect = subtitle.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 3 + 70))
         self.screen.blit(subtitle, subtitle_rect)
+
         
         font = pygame.font.Font(None, 42)
-        
+            
         start_button = pygame.Rect(WINDOW_WIDTH // 2 - 150, WINDOW_HEIGHT * 2 // 3, 300, 60)
         quit_button = pygame.Rect(WINDOW_WIDTH // 2 - 150, WINDOW_HEIGHT * 2 // 3 + 80, 300, 60)
-        
+            
         pygame.draw.rect(self.screen, GREEN, start_button)
         pygame.draw.rect(self.screen, RED, quit_button)
-        
+            
         start_text = font.render("Start Simulation", True, BLACK)
         quit_text = font.render("Quit Game", True, BLACK)
-        
+            
         self.screen.blit(start_text, start_text.get_rect(center=start_button.center))
         self.screen.blit(quit_text, quit_text.get_rect(center=quit_button.center))
-        
+            
         return start_button, quit_button
+
     
     def draw_turn_announcement(self):
         """Draw turn announcement (only for alive entities)"""
